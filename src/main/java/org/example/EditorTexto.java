@@ -5,8 +5,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,11 +16,13 @@ public class EditorTexto {
     JFrame ventana;
     JTextArea ventanaText;
     JFileChooser fc;
+    boolean modificado;
 
     public EditorTexto() {
         this.ventana = new JFrame("Editor de texto");
         this.ventanaText = new JTextArea();
         this.fc= new JFileChooser();
+        this.modificado = false;
         ejecutarEditor();
     }
 
@@ -94,7 +95,32 @@ public class EditorTexto {
         ventana.setJMenuBar(menu);
         ventana.setVisible(true);
 
-        // PRUEBAS PARA QUE SE VERIFIQUEN LAS MODIFICACIONES
+        // atajos de teclado
+
+        abrir.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        guardar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        cerrar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+
+
+        // Para detectar modificaciones no guardadas
+        ventanaText.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                modificado = true;
+            }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                modificado = true;
+            }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                modificado = true;
+            }
+        });
+
+        // Confirmación de salida si hay cambios sin guardar
+        ventana.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+               cerrarAplicacion();
+            }
+        });
 
     }
 
@@ -120,6 +146,7 @@ public class EditorTexto {
                     ventanaText.setText("");
                     String contenido = Files.readString(f.toPath());
                     ventanaText.setText(contenido);
+                    modificado=false;
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(null, "Error al cargar el archivo", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
@@ -140,6 +167,7 @@ public class EditorTexto {
             }
             try (var bw = Files.newBufferedWriter(f.toPath())) {
                 bw.write(ventanaText.getText());
+                modificado=false;
                 JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente", "Guardar", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error en la operación", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -148,8 +176,13 @@ public class EditorTexto {
     }
 
     private void cerrarAplicacion() {
-        ventana.dispose();
-
+       if (modificado) {
+          int opcion = JOptionPane.showConfirmDialog(null, "Hay cambios sin guardar. ¿Salir de todos modos?", "SALIR", JOptionPane.YES_NO_OPTION);
+          if (opcion == JOptionPane.NO_OPTION) {
+              return;
+          }
+       }
+       ventana.dispose();
     }
 
     public static void main(String[] args) {
