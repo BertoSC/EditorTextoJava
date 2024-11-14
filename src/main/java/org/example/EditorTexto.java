@@ -28,6 +28,8 @@ public class EditorTexto {
 
     private void ejecutarEditor() {
 
+        // Configuración de ventana general
+
         ventana.setSize(600,600);
         ventana.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         ventana.setLocationRelativeTo(null);
@@ -35,12 +37,18 @@ public class EditorTexto {
 
         Font latoFont= importarFuente();
 
+        // Configuración del textarea
+
         ventanaText.setLineWrap(true);
         ventanaText.setWrapStyleWord(true);
         ventanaText.setFont(latoFont);
         ventanaText.setBorder(new EmptyBorder(20, 20, 20, 20));
 
+        // Creación del scroll
+
         JScrollPane scrollPane = new JScrollPane(ventanaText);
+
+        // Creación del menú de opciones
 
         JMenuBar menu = new JMenuBar();
         menu.setBackground(new Color(240, 240,240));
@@ -95,14 +103,15 @@ public class EditorTexto {
         ventana.setJMenuBar(menu);
         ventana.setVisible(true);
 
-        // atajos de teclado
+        // Atajos de teclado
 
         abrir.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         guardar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         cerrar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 
-        // Para detectar modificaciones no guardadas
+        // Detectar modificaciones no guardadas
+
         ventanaText.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
                 modificado = true;
@@ -115,7 +124,8 @@ public class EditorTexto {
             }
         });
 
-        // Confirmación de salida si hay cambios sin guardar
+        // Configuración del cierre de la APP asociado al método de cierre
+
         ventana.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                cerrarAplicacion();
@@ -123,6 +133,8 @@ public class EditorTexto {
         });
 
     }
+
+    // Método para importar una fuente
 
     private Font importarFuente(){
         Font latoFont = null;
@@ -135,6 +147,8 @@ public class EditorTexto {
         return latoFont;
 
     }
+
+    // Método para abrir un archivo
 
     private void abrirArchivo() {
         int opcion= fc.showOpenDialog(null);
@@ -157,6 +171,8 @@ public class EditorTexto {
 
     }
 
+    // Método para guardar archivo
+
     private void guardarArchivo() {
         int opcion = fc.showSaveDialog(null);
         File f = null;
@@ -174,6 +190,8 @@ public class EditorTexto {
             }
         }
     }
+
+    // Método para ejecutar el cierre de la aplicación
 
     private void cerrarAplicacion() {
        if (modificado) {
