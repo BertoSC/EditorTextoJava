@@ -54,23 +54,27 @@ public class EditorTexto {
         menu.setBackground(new Color(240, 240,240));
 
         JMenu archivo = new JMenu("ARCHIVO");
-        archivo.setBorder(new EmptyBorder(14, 14, 14, 14));
+        archivo.setBorder(new EmptyBorder(14, 10, 14, 8));
         archivo.setFont(latoFont);
 
         JMenuItem abrir = new JMenuItem("Abrir");
-        abrir.setBorder(new EmptyBorder(14, 15, 14, 15));
+        abrir.setBorder(new EmptyBorder(14, 9, 14, 0));
         abrir.setBackground(new Color(240, 240,240));
         abrir.setFont(latoFont);
+        abrir.setIconTextGap(12);
 
         JMenuItem guardar = new JMenuItem("Guardar");
-        guardar.setBorder(new EmptyBorder(14, 15, 14, 15));
+        guardar.setBorder(new EmptyBorder(14, 9, 14, 0));
         guardar.setBackground(new Color(240, 240,240));
+        guardar.setHorizontalTextPosition(SwingConstants.CENTER);
+        guardar.setIconTextGap(12);
         guardar.setFont(latoFont);
 
         JMenuItem cerrar = new JMenuItem("Cerrar");
-        cerrar.setBorder(new EmptyBorder(14, 15, 14, 15));
+        cerrar.setBorder(new EmptyBorder(14, 9, 14, 0));
         cerrar.setBackground(new Color(240, 240,240));
         cerrar.setFont(latoFont);
+        cerrar.setIconTextGap(12);
 
         abrir.addActionListener(new ActionListener() {
             @Override
