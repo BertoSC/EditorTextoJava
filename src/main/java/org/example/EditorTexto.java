@@ -1,5 +1,4 @@
 package org.example;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.SimpleAttributeSet;
@@ -17,12 +16,14 @@ public class EditorTexto {
     JTextArea ventanaText;
     JFileChooser fc;
     boolean modificado;
+    String archivoActual;
 
     public EditorTexto() {
         this.ventana = new JFrame("Editor de texto");
         this.ventanaText = new JTextArea();
         this.fc= new JFileChooser();
         this.modificado = false;
+        this.archivoActual=null;
         ejecutarEditor();
     }
 
@@ -31,6 +32,7 @@ public class EditorTexto {
         // Configuración de ventana general
 
         ventana.setSize(600,600);
+        ventana.setMinimumSize(new Dimension(200, 200));
         ventana.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         ventana.setLocationRelativeTo(null);
         ventana.setLayout(new BorderLayout());
@@ -47,6 +49,7 @@ public class EditorTexto {
         // Creación del scroll
 
         JScrollPane scrollPane = new JScrollPane(ventanaText);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Creación del menú de opciones
 
@@ -57,24 +60,44 @@ public class EditorTexto {
         archivo.setBorder(new EmptyBorder(14, 10, 14, 8));
         archivo.setFont(latoFont);
 
+        JMenuItem nuevo = new JMenuItem("Nuevo");
+        nuevo.setBorder(new EmptyBorder(14, 10, 14, 0));
+        nuevo.setBackground(new Color(240, 240,240));
+        nuevo.setFont(latoFont);
+        nuevo.setPreferredSize(new Dimension(200, 50));
+
         JMenuItem abrir = new JMenuItem("Abrir");
-        abrir.setBorder(new EmptyBorder(14, 9, 14, 0));
+        abrir.setBorder(new EmptyBorder(14, 10, 14, 0));
         abrir.setBackground(new Color(240, 240,240));
         abrir.setFont(latoFont);
-        abrir.setIconTextGap(12);
+        abrir.setPreferredSize(new Dimension(200, 50));
 
         JMenuItem guardar = new JMenuItem("Guardar");
-        guardar.setBorder(new EmptyBorder(14, 9, 14, 0));
+        guardar.setBorder(new EmptyBorder(14, 10, 14, 0));
         guardar.setBackground(new Color(240, 240,240));
         guardar.setHorizontalTextPosition(SwingConstants.CENTER);
-        guardar.setIconTextGap(12);
         guardar.setFont(latoFont);
+        guardar.setPreferredSize(new Dimension(200, 50));
+
+        JMenuItem guardarComo = new JMenuItem("Guardar como");
+        guardarComo.setBorder(new EmptyBorder(14, 10, 14, 0));
+        guardarComo.setBackground(new Color(240, 240,240));
+        guardarComo.setHorizontalTextPosition(SwingConstants.CENTER);
+        guardarComo.setPreferredSize(new Dimension(200, 50));
+        guardarComo.setFont(latoFont);
 
         JMenuItem cerrar = new JMenuItem("Cerrar");
-        cerrar.setBorder(new EmptyBorder(14, 9, 14, 0));
+        cerrar.setBorder(new EmptyBorder(14, 10, 14, 0));
         cerrar.setBackground(new Color(240, 240,240));
         cerrar.setFont(latoFont);
-        cerrar.setIconTextGap(12);
+        cerrar.setPreferredSize(new Dimension(200, 50));
+
+        nuevo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nuevoDocumento();
+            }
+        });
 
         abrir.addActionListener(new ActionListener() {
             @Override
@@ -90,6 +113,13 @@ public class EditorTexto {
             }
         });
 
+        guardarComo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guardarComo();
+            }
+        });
+
         cerrar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,8 +127,10 @@ public class EditorTexto {
             }
         });
 
+        archivo.add(nuevo);
         archivo.add(abrir);
         archivo.add(guardar);
+        archivo.add(guardarComo);
         archivo.addSeparator();
         archivo.add(cerrar);
         menu.add(archivo);
@@ -109,8 +141,10 @@ public class EditorTexto {
 
         // Atajos de teclado
 
+        nuevo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
         abrir.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         guardar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        guardarComo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK));
         cerrar.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
 
 
@@ -152,6 +186,15 @@ public class EditorTexto {
 
     }
 
+    // Método para resetear a nuevo documento
+
+    private void nuevoDocumento(){
+        ventanaText.setText("");
+        archivoActual=null;
+        modificado=false;
+    }
+
+
     // Método para abrir un archivo
 
     private void abrirArchivo() {
@@ -165,6 +208,7 @@ public class EditorTexto {
                     String contenido = Files.readString(f.toPath());
                     ventanaText.setText(contenido);
                     modificado=false;
+                    archivoActual=f.getAbsolutePath();
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(null, "Error al cargar el archivo", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
@@ -175,9 +219,10 @@ public class EditorTexto {
 
     }
 
-    // Método para guardar archivo
+    // Método para guardar archivo que te detecta, después de guardarlo una vez, si estás trabajando en el archivo ya guardado o cargado
 
     private void guardarArchivo() {
+        if (archivoActual==null){
         int opcion = fc.showSaveDialog(null);
         File f = null;
         if (opcion == JFileChooser.APPROVE_OPTION) {
@@ -188,11 +233,45 @@ public class EditorTexto {
             try (var bw = Files.newBufferedWriter(f.toPath())) {
                 bw.write(ventanaText.getText());
                 modificado=false;
+                archivoActual=f.getAbsolutePath();
                 JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente", "Guardar", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Error en la operación", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         }
+        } else {
+            File f= new File(archivoActual);
+            try (var bw = Files.newBufferedWriter(f.toPath())) {
+                bw.write(ventanaText.getText());
+                modificado=false;
+                JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente", "Guardar", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error en la operación", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+
+        }
+    }
+
+    // Método para guardar y elegir sobreescribir o crear nuevo archivo de forma manual
+
+    private void guardarComo(){
+        int opcion = fc.showSaveDialog(null);
+        File f = null;
+        if (opcion == JFileChooser.APPROVE_OPTION) {
+            f = fc.getSelectedFile();
+            if (!f.getName().toLowerCase().endsWith(".txt")) {
+                f = new File(f.getAbsolutePath() + ".txt");
+            }
+            try (var bw = Files.newBufferedWriter(f.toPath())) {
+                bw.write(ventanaText.getText());
+                modificado=false;
+                archivoActual=f.getAbsolutePath();
+                JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente", "Guardar", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Error en la operación", "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
     }
 
     // Método para ejecutar el cierre de la aplicación
